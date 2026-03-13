@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Salvar nome no Supabase</title>
+  <title>Salvar e listar nomes</title>
 </head>
 <body>
   <h1>Salvar nome</h1>
@@ -15,11 +15,12 @@
 
   <p id="mensagem"></p>
 
-  <!-- Biblioteca do Supabase via CDN -->
+  <h2>Nomes enviados</h2>
+  <ul id="lista-nomes"></ul>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script>
-    // TROQUE pelos dados do seu projeto
     const SUPABASE_URL = "https://vpishybqzeflcvkdbhlq.supabase.co";
     const SUPABASE_KEY = "sb_publishable_kWSkLBhVi1O0IKljgdko_A_Io1YFJr1";
 
@@ -28,6 +29,34 @@
     const form = document.getElementById("form-nome");
     const inputNome = document.getElementById("nome");
     const mensagem = document.getElementById("mensagem");
+    const listaNomes = document.getElementById("lista-nomes");
+
+    async function carregarNomes() {
+      listaNomes.innerHTML = "<li>Carregando...</li>";
+
+      const { data, error } = await supabaseClient
+        .from("nomes")
+        .select("id, nome")
+        .order("id", { ascending: false });
+
+      if (error) {
+        listaNomes.innerHTML = "<li>Erro ao carregar nomes.</li>";
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        listaNomes.innerHTML = "<li>Nenhum nome enviado ainda.</li>";
+        return;
+      }
+
+      listaNomes.innerHTML = "";
+
+      data.forEach(function (item) {
+        const li = document.createElement("li");
+        li.textContent = item.nome;
+        listaNomes.appendChild(li);
+      });
+    }
 
     form.addEventListener("submit", async function (event) {
       event.preventDefault();
@@ -50,7 +79,11 @@
 
       mensagem.textContent = "Nome salvo com sucesso!";
       inputNome.value = "";
+
+      carregarNomes();
     });
+
+    carregarNomes();
   </script>
 </body>
 </html>
